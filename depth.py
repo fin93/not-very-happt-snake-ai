@@ -17,7 +17,8 @@ class Snake:
         self.body = [[WIDTH // 2, HEIGHT // 2]]
         self.options = {}
         self.available = ['up', 'down', 'left', 'right']
-        self.depth = 2
+        self.depth = 1
+        self.total = [0, 0]
         self.future = self.body[0]
         for i in range(1, self.width):  self.body.append([WIDTH // 2 - self.block_size * i, HEIGHT // 2])
     
@@ -25,8 +26,11 @@ class Snake:
         if not depth:       
             return math.hypot(pos[0] - apple.position[0], pos[1] - apple.position[1])
 
-        
-        print(len(self.options), self.options)
+        if len(self.options) == 0: 
+            self.total[0] += len(self.body)
+            self.total[1] += 1
+        elif depth < self.depth:    self.direction = min(self.options, key=self.options.get)
+        # print(len(self.options), self.options)
         
         
         self.options.clear()
@@ -41,8 +45,9 @@ class Snake:
                     self.options[i] = self.decide(y, depth-1)
         
         
-        
-        self.direction = min(self.options, key=self.options.get)
+        if len(self.options) != 0:
+            if depth == self.depth:
+                self.direction = min(self.options, key=self.options.get)
         
 
     def move(self, keys):
@@ -61,12 +66,16 @@ class Snake:
             x = [self.body[0][0] + self.directions[self.direction], self.body[0][1]]
         elif self.direction == 'down' or self.direction == 'up':
             x = [self.body[0][0], self.body[0][1] + self.directions[self.direction]]
-        self.body.insert(0, x)
+        
+        if not x in self.body:
+            self.body.insert(0, x)
+        else:   print(len(self.body))
 
-    def draw(self):
-        pygame.draw.circle(screen, (220, 220, 220), self.body[0], 9)
-        for part in range(1, len(self.body)):
-            pygame.draw.circle(screen, (120, 120, 120), self.body[part], 9)
+    def draw(self, on=1):
+        if on:
+            pygame.draw.circle(screen, (220, 220, 220), self.body[0], 9)
+            for part in range(1, len(self.body)):
+                pygame.draw.circle(screen, (120, 120, 120), self.body[part], 9)
 
     def grow(self):
         self.body.append(self.body[-1])
@@ -84,8 +93,9 @@ class Apples:
         while self.position in body:
             self.position = [random.randint(1, WIDTH / 20 - 20) * 40, random.randint(1, HEIGHT / 20 - 20) * 60]
     
-    def draw(self):
-        pygame.draw.circle(screen, (255, 100, 100), self.position, 9)
+    def draw(self, on=1):
+        if on:
+            pygame.draw.circle(screen, (255, 100, 100), self.position, 9)
     
     def collide(self, pos):
         if self.position == pos[0]: return True
@@ -102,11 +112,12 @@ apple = Apples()
 
 def main():
     while True:
-        clock.tick(15)
+        clock.tick(200)
         screen.fill((0, 0, 0))
         pygame.display.set_caption("Snake Game - FPS: " + str(clock.get_fps()))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                # print(snake.total[0]/snake.total[1])
                 pygame.quit()
                 quit()
 

@@ -87,7 +87,7 @@ class Apples:
         return hit
 
 
-snake = Snake(4)
+snake = Snake(20)
 apple = Apples()
 snake.decide()
 
